@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clases - Corporal Gym</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <!-- SIDEBAR -->
+  <!-- Botón toggle para móvil -->
+  <button class="sidebar-toggle" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+  </button>
+  
+  <!-- Overlay para móvil -->
+  <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+  
+  <aside class="sidebar">
+    <a href="index.html"><img src="images/logo.png" alt="logo" class="menu-icon"></a>
+    <h3>Corporal Gym</h3>
+    <ul>
+      <li><a href="index.html"><i class="fas fa-home"></i> Inicio</a></li>
+      <li><a href="membresias.html"><i class="fas fa-id-card"></i> Membresías</a></li>
+      <li><a href="clases.html" class="active"><i class="fas fa-dumbbell"></i> Clases</a></li>
+      <li><a href="reportes.html"><i class="fas fa-chart-bar"></i> Reportes</a></li>
+      <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Salir</a></li>
+    </ul>
+  </aside>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="dashboard-main">
+    <!-- Header de la página -->
+    <div class="page-header">
+      <div class="header-content">
+        <h1><i class="fas fa-dumbbell"></i> Clases Disponibles</h1>
+        <p>Descubre nuestras clases dirigidas por entrenadores expertos</p>
+      </div>
+      <div class="header-stats">
+        <div class="stat-item">
+          <i class="fas fa-calendar"></i>
+          <span>8 Clases</span>
+        </div>
+        <div class="stat-item">
+          <i class="fas fa-users"></i>
+          <span>3 Entrenadores</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros de clases -->
+    <div class="filters-section">
+      <div class="filter-group">
+        <label for="dayFilter">Filtrar por día:</label>
+        <select id="dayFilter" onchange="filtrarClases()">
+          <option value="">Todos los días</option>
+          <option value="Lunes">Lunes</option>
+          <option value="Martes">Martes</option>
+          <option value="Miercoles">Miércoles</option>
+          <option value="Jueves">Jueves</option>
+          <option value="Viernes">Viernes</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="timeFilter">Filtrar por horario:</label>
+        <select id="timeFilter" onchange="filtrarClases()">
+          <option value="">Todos los horarios</option>
+          <option value="morning">Mañana (6:00 - 12:00)</option>
+          <option value="afternoon">Tarde (12:00 - 18:00)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Contenedor de clases -->
+    <div class="classes-page-container">
+      <div class="classes-grid" id="clases-container">
+        <!-- Loading placeholder -->
+        <div class="loading-placeholder">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>Cargando clases...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección de entrenadores -->
+    <section class="trainers-section">
+      <h2>Nuestros Entrenadores</h2>
+      <div class="trainers-grid">
+        <div class="trainer-card">
+          <div class="trainer-avatar">
+            <i class="fas fa-user-circle"></i>
+          </div>
+          <h3>Carlos</h3>
+          <p class="trainer-specialty">Especialista en Yoga y Pilates</p>
+          <div class="trainer-classes">
+            <span class="class-tag">Yoga</span>
+            <span class="class-tag">Pilates</span>
+            <span class="class-tag">Cardio</span>
+          </div>
+        </div>
+        <div class="trainer-card">
+          <div class="trainer-avatar">
+            <i class="fas fa-user-circle"></i>
+          </div>
+          <h3>Ana</h3>
+          <p class="trainer-specialty">Instructora de Zumba y Funcional</p>
+          <div class="trainer-classes">
+            <span class="class-tag">Zumba</span>
+            <span class="class-tag">Funcional</span>
+            <span class="class-tag">Stretching</span>
+          </div>
+        </div>
+        <div class="trainer-card">
+          <div class="trainer-avatar">
+            <i class="fas fa-user-circle"></i>
+          </div>
+          <h3>Luis</h3>
+          <p class="trainer-specialty">Experto en Spinning y Crossfit</p>
+          <div class="trainer-classes">
+            <span class="class-tag">Spinning</span>
+            <span class="class-tag">Crossfit</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const token = localStorage.getItem("token");
+    if(!token) window.location.href="login.html";
+
+    let todasLasClases = [];
+
+    async function cargarClases(){
+      try {
+        const res = await fetch("http://localhost:3000/clases");
+        const clases = await res.json();
+        todasLasClases = clases;
+        
+        mostrarClases(clases);
+        
+        // Animar las tarjetas después de cargarlas
+        setTimeout(() => animateCards(), 100);
+      } catch (error) {
+        console.error('Error cargando clases:', error);
+        showNotification('Error al cargar las clases', 'error');
+      }
+    }
+
+    function mostrarClases(clases) {
+      const container = document.getElementById("clases-container");
+      container.innerHTML = "";
+
+      if (clases.length === 0) {
+        container.innerHTML = '<div class="no-data">No hay clases disponibles para los filtros seleccionados</div>';
+        return;
+      }
+
+      clases.forEach((c, index) => {
+        const card = document.createElement("div");
+        card.className = "class-card";
+        if (index === 1) card.classList.add("featured");
+        
+        // Formatear horario
+        const horarioInicio = c.horario_inicio ? c.horario_inicio.substring(0, 5) : '';
+        const horarioFin = c.horario_fin ? c.horario_fin.substring(0, 5) : '';
+        const horarioFormateado = horarioInicio && horarioFin ? `${horarioInicio} - ${horarioFin}` : 'Por definir';
+        
+        // Formatear días de la semana
+        const diasFormateados = c.dias_semana ? c.dias_semana.replace(/,/g, ', ') : '';
+        
+        // Determinar tipo de clase para el color
+        const tipoClase = getTipoClase(c.nombre);
+        
+        card.innerHTML = `
+          <div class="class-header ${tipoClase}">
+            <h3>${c.nombre}</h3>
+            <div class="class-time">${horarioFormateado}</div>
+          </div>
+          <div class="class-info">
+            <div class="class-trainer">
+              <i class="fas fa-user"></i>
+              <span>${c.entrenador}</span>
+            </div>
+            <div class="class-days">
+              <i class="fas fa-calendar"></i>
+              <span>${diasFormateados}</span>
+            </div>
+          </div>
+          <div class="class-description">
+            <p>Clase de ${c.nombre.toLowerCase()} dirigida por ${c.entrenador}</p>
+          </div>
+          <div class="class-actions">
+            <button class="btn-class-info" onclick="verDetallesClase('${c.nombre}')">
+              <i class="fas fa-info-circle"></i>
+              Ver Detalles
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function getTipoClase(nombreClase) {
+      const nombre = nombreClase.toLowerCase();
+      if (nombre.includes('yoga') || nombre.includes('pilates') || nombre.includes('stretching')) {
+        return 'mind-body';
+      } else if (nombre.includes('zumba') || nombre.includes('spinning') || nombre.includes('cardio')) {
+        return 'cardio';
+      } else if (nombre.includes('crossfit') || nombre.includes('funcional')) {
+        return 'strength';
+      } else {
+        return 'general';
+      }
+    }
+
+    function filtrarClases() {
+      const diaFiltro = document.getElementById('dayFilter').value;
+      const tiempoFiltro = document.getElementById('timeFilter').value;
+      
+      let clasesFiltradas = todasLasClases.filter(clase => {
+        let cumpleFiltros = true;
+        
+        // Filtro por día
+        if (diaFiltro && !clase.dias_semana.includes(diaFiltro)) {
+          cumpleFiltros = false;
+        }
+        
+        // Filtro por horario
+        if (tiempoFiltro && clase.horario_inicio) {
+          const hora = parseInt(clase.horario_inicio.split(':')[0]);
+          if (tiempoFiltro === 'morning' && (hora < 6 || hora >= 12)) {
+            cumpleFiltros = false;
+          } else if (tiempoFiltro === 'afternoon' && (hora < 12 || hora >= 18)) {
+            cumpleFiltros = false;
+          } else if (tiempoFiltro === 'evening' && (hora < 18 || hora >= 22)) {
+            cumpleFiltros = false;
+          }
+        }
+        
+        return cumpleFiltros;
+      });
+      
+      mostrarClases(clasesFiltradas);
+    }
+
+    function verDetallesClase(nombreClase) {
+      showNotification(`Detalles de la clase: ${nombreClase}`, 'info');
+    }
+
+    function logout(){
+      localStorage.removeItem("token");
+      window.location.href="login.html";
+    }
+
+    // Función para mostrar notificaciones
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+        <span>${message}</span>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.classList.add('show');
+      }, 100);
+      
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+          document.body.removeChild(notification);
+        }, 300);
+      }, 3000);
+    }
+
+    // Función para animar las tarjetas
+    function animateCards() {
+      const cards = document.querySelectorAll('.class-card, .trainer-card');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-in');
+          }
+        });
+      }, { threshold: 0.1 });
+
+      cards.forEach(card => observer.observe(card));
+    }
+
+    // Inicializar cuando se carga la página
+    document.addEventListener('DOMContentLoaded', () => {
+      cargarClases();
+    });
+
+    // ====== FUNCIONES PARA SIDEBAR RESPONSIVE ======
+    function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.querySelector('.sidebar-overlay');
+      
+      sidebar.classList.toggle('active');
+      overlay.classList.toggle('hidden');
+    }
+
+    function closeSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.querySelector('.sidebar-overlay');
+      
+      sidebar.classList.remove('active');
+      overlay.classList.add('hidden');
+    }
+
+    // Cerrar sidebar al hacer clic en un enlace (móvil)
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('.sidebar a') && window.innerWidth <= 768) {
+        closeSidebar();
+      }
+    });
+
+    // Cerrar sidebar al cambiar tamaño de ventana
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
+        
+        sidebar.classList.remove('active');
+        overlay.classList.add('hidden');
+      }
+    });
+  </script>
+</body>
+</html>

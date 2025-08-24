@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reportes - Corporal Gym</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <!-- SIDEBAR -->
+  <!-- Botón toggle para móvil -->
+  <button class="sidebar-toggle" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+  </button>
+  
+  <!-- Overlay para móvil -->
+  <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+  
+  <aside class="sidebar">
+    <a href="index.html"><img src="images/logo.png" alt="logo" class="menu-icon"></a>
+    <h3>Corporal Gym</h3>
+    <ul>
+      <li><a href="index.html"><i class="fas fa-home"></i> Inicio</a></li>
+      <li><a href="membresias.html"><i class="fas fa-id-card"></i> Membresías</a></li>
+      <li><a href="clases.html"><i class="fas fa-dumbbell"></i> Clases</a></li>
+      <li><a href="reportes.html" class="active"><i class="fas fa-chart-bar"></i> Reportes</a></li>
+      <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Salir</a></li>
+    </ul>
+  </aside>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="dashboard-main">
+    <!-- Header de la página -->
+    <div class="page-header">
+      <div class="header-content">
+        <h1><i class="fas fa-chart-bar"></i> Mis Pagos y Membresías</h1>
+        <p>Gestiona y visualiza el estado de tus membresías activas</p>
+      </div>
+      <div class="header-stats">
+        <div class="stat-item">
+          <i class="fas fa-credit-card"></i>
+          <span id="totalPagos">0 Pagos</span>
+        </div>
+        <div class="stat-item">
+          <i class="fas fa-check-circle"></i>
+          <span id="membresiasActivas">0 Activas</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resumen de estadísticas -->
+    <section class="stats-summary">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-dollar-sign"></i>
+          </div>
+          <div class="stat-content">
+            <h3>Total Gastado</h3>
+            <span class="stat-number" id="totalGastado">$0</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-calendar-check"></i>
+          </div>
+          <div class="stat-content">
+            <h3>Último Pago</h3>
+            <span class="stat-number" id="ultimoPago">-</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="stat-content">
+            <h3>Próximo Vencimiento</h3>
+            <span class="stat-number" id="proximoVencimiento">-</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filtros de reportes -->
+    <div class="filters-section">
+      <div class="filter-group">
+        <label for="statusFilter">Filtrar por estado:</label>
+        <select id="statusFilter" onchange="filtrarReportes()">
+          <option value="">Todos los estados</option>
+          <option value="Activo">Activo</option>
+          <option value="Pausado">Pausado</option>
+          <option value="No activo">No activo</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="dateFilter">Ordenar por fecha:</label>
+        <select id="dateFilter" onchange="ordenarReportes()">
+          <option value="reciente">Más reciente</option>
+          <option value="antiguo">Más antiguo</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Contenedor de reportes -->
+    <div class="reports-page-container">
+      <div class="reports-grid" id="reportes-container">
+        <!-- Loading placeholder -->
+        <div class="loading-placeholder">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>Cargando reportes...</p>
+        </div>
+      </div>
+    </div>
+
+
+  </main>
+
+  <script>
+    const token = localStorage.getItem("token");
+    if(!token) window.location.href="login.html";
+
+    let todosLosReportes = [];
+
+    async function cargarReportes() {
+      try {
+        const res = await fetch("http://localhost:3000/mis-pagos", {
+          headers: {"Authorization": "Bearer "+token}
+        });
+        const data = await res.json();
+        todosLosReportes = data;
+
+        mostrarReportes(data);
+        actualizarEstadisticas(data);
+        
+        // Animar las tarjetas después de cargarlas
+        setTimeout(() => animateCards(), 100);
+      } catch(err){
+        console.error(err);
+        showNotification("Error al cargar reportes", 'error');
+      }
+    }
+
+    function mostrarReportes(reportes) {
+      const container = document.getElementById("reportes-container");
+      container.innerHTML = "";
+
+      if (reportes.length === 0) {
+        container.innerHTML = '<div class="no-data">No tienes pagos registrados</div>';
+        return;
+      }
+
+      reportes.forEach((r, index) => {
+        const div = document.createElement("div");
+        div.className = "report-card";
+        
+        // Determinar el estado para el color
+        const estadoClass = r.estado === 'Activo' ? 'active' : r.estado === 'Pausado' ? 'paused' : 'inactive';
+        
+        div.innerHTML = `
+          <div class="report-header ${estadoClass}">
+            <h3>${r.nombre}</h3>
+            <span class="status-badge ${estadoClass}">
+              <i class="fas fa-${r.estado === 'Activo' ? 'check-circle' : r.estado === 'Pausado' ? 'pause-circle' : 'times-circle'}"></i>
+              ${r.estado}
+            </span>
+          </div>
+          <div class="report-content">
+            <div class="report-info">
+              <div class="info-item">
+                <i class="fas fa-dollar-sign"></i>
+                <span><strong>Monto:</strong> $${r.monto}</span>
+              </div>
+              <div class="info-item">
+                <i class="fas fa-calendar"></i>
+                <span><strong>Fecha:</strong> ${new Date(r.fecha_pago).toLocaleDateString()}</span>
+              </div>
+              <div class="info-item">
+                <i class="fas fa-clock"></i>
+                <span><strong>Hora:</strong> ${new Date(r.fecha_pago).toLocaleTimeString()}</span>
+              </div>
+            </div>
+            <div class="report-actions">
+              <button class="btn-edit" onclick="cambiarEstado(${r.id})">
+                <i class="fas fa-edit"></i>
+                Cambiar Estado
+              </button>
+            </div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function actualizarEstadisticas(reportes) {
+      // Total de pagos
+      document.getElementById('totalPagos').textContent = `${reportes.length} Pagos`;
+      
+      // Membresías activas
+      const activas = reportes.filter(r => r.estado === 'Activo').length;
+      document.getElementById('membresiasActivas').textContent = `${activas} Activas`;
+      
+      // Total gastado
+      const totalGastado = reportes.reduce((sum, r) => sum + parseFloat(r.monto), 0);
+      document.getElementById('totalGastado').textContent = `$${totalGastado.toFixed(2)}`;
+      
+      // Último pago
+      if (reportes.length > 0) {
+        const ultimoPago = new Date(Math.max(...reportes.map(r => new Date(r.fecha_pago))));
+        document.getElementById('ultimoPago').textContent = ultimoPago.toLocaleDateString();
+      }
+      
+      // Próximo vencimiento (simulado)
+      const proximoVencimiento = new Date();
+      proximoVencimiento.setDate(proximoVencimiento.getDate() + 30);
+      document.getElementById('proximoVencimiento').textContent = proximoVencimiento.toLocaleDateString();
+    }
+
+    function filtrarReportes() {
+      const estadoFiltro = document.getElementById('statusFilter').value;
+      
+      let reportesFiltrados = todosLosReportes;
+      if (estadoFiltro) {
+        reportesFiltrados = todosLosReportes.filter(r => r.estado === estadoFiltro);
+      }
+      
+      mostrarReportes(reportesFiltrados);
+    }
+
+    function ordenarReportes() {
+      const orden = document.getElementById('dateFilter').value;
+      let reportesOrdenados = [...todosLosReportes];
+      
+      if (orden === 'reciente') {
+        reportesOrdenados.sort((a, b) => new Date(b.fecha_pago) - new Date(a.fecha_pago));
+      } else {
+        reportesOrdenados.sort((a, b) => new Date(a.fecha_pago) - new Date(b.fecha_pago));
+      }
+      
+      mostrarReportes(reportesOrdenados);
+    }
+
+    function cambiarEstado(pagoId){
+      const nuevoEstado = prompt("Ingrese nuevo estado (Activo, Pausado, No activo):");
+      if(!nuevoEstado) return;
+
+      fetch(`http://localhost:3000/mis-pagos/${pagoId}/estado`, {
+        method:"PUT",
+        headers:{
+          "Content-Type":"application/json",
+          "Authorization":"Bearer "+token
+        },
+        body: JSON.stringify({estado:nuevoEstado})
+      })
+      .then(res => res.json())
+      .then(data => {
+        showNotification(data.message, 'success');
+        cargarReportes();
+      })
+      .catch(err => {
+        console.error(err);
+        showNotification("Error al cambiar estado", 'error');
+      });
+    }
+
+
+
+
+
+    function logout(){
+      localStorage.removeItem("token");
+      window.location.href="login.html";
+    }
+
+    // Función para mostrar notificaciones
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+        <span>${message}</span>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.classList.add('show');
+      }, 100);
+      
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+          document.body.removeChild(notification);
+        }, 300);
+      }, 3000);
+    }
+
+    // Función para animar las tarjetas
+    function animateCards() {
+      const cards = document.querySelectorAll('.report-card, .stat-card');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-in');
+          }
+        });
+      }, { threshold: 0.1 });
+
+      cards.forEach(card => observer.observe(card));
+    }
+
+    // Inicializar cuando se carga la página
+    document.addEventListener('DOMContentLoaded', () => {
+      cargarReportes();
+    });
+
+    // ====== FUNCIONES PARA SIDEBAR RESPONSIVE ======
+    function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.querySelector('.sidebar-overlay');
+      
+      sidebar.classList.toggle('active');
+      overlay.classList.toggle('hidden');
+    }
+
+    function closeSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.querySelector('.sidebar-overlay');
+      
+      sidebar.classList.remove('active');
+      overlay.classList.add('hidden');
+    }
+
+    // Cerrar sidebar al hacer clic en un enlace (móvil)
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('.sidebar a') && window.innerWidth <= 768) {
+        closeSidebar();
+      }
+    });
+
+    // Cerrar sidebar al cambiar tamaño de ventana
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
+        
+        sidebar.classList.remove('active');
+        overlay.classList.add('hidden');
+      }
+    });
+  </script>
+</body>
+</html>

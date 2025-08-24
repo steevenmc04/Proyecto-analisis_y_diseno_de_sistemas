@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Membresías - Corporal Gym</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <!-- SIDEBAR -->
+  <!-- Botón toggle para móvil -->
+  <button class="sidebar-toggle" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+  </button>
+  
+  <!-- Overlay para móvil -->
+  <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+  
+  <aside class="sidebar">
+    <a href="index.html"><img src="images/logo.png" alt="logo" class="menu-icon"></a>
+    <h3>Corporal Gym</h3>
+    <ul>
+      <li><a href="index.html"><i class="fas fa-home"></i> Inicio</a></li>
+      <li><a href="membresias.html" class="active"><i class="fas fa-id-card"></i> Membresías</a></li>
+      <li><a href="clases.html"><i class="fas fa-dumbbell"></i> Clases</a></li>
+      <li><a href="reportes.html"><i class="fas fa-chart-bar"></i> Reportes</a></li>
+      <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Salir</a></li>
+    </ul>
+  </aside>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="dashboard-main">
+    <!-- Header de la página -->
+    <div class="page-header">
+      <div class="header-content">
+        <h1><i class="fas fa-id-card"></i> Membresías Disponibles</h1>
+        <p>Elige el plan que mejor se adapte a tus objetivos fitness</p>
+      </div>
+      <div class="header-stats">
+        <div class="stat-item">
+          <i class="fas fa-users"></i>
+          <span>150+ Miembros</span>
+        </div>
+        <div class="stat-item">
+          <i class="fas fa-star"></i>
+          <span>4.8/5 Rating</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenedor de membresías -->
+    <div class="memberships-page-container">
+      <div class="memberships-grid" id="membresiasContainer">
+        <!-- Loading placeholder -->
+        <div class="loading-placeholder">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>Cargando membresías...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección de beneficios -->
+    <section class="benefits-section">
+      <h2>¿Por qué elegir nuestras membresías?</h2>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <i class="fas fa-clock"></i>
+          </div>
+          <h3>Acceso 24/7</h3>
+          <p>Entrena cuando quieras, sin restricciones de horario</p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <i class="fas fa-dumbbell"></i>
+          </div>
+          <h3>Equipos Premium</h3>
+          <p>Acceso a equipos de última generación</p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <i class="fas fa-user-friends"></i>
+          </div>
+          <h3>Clases Grupales</h3>
+          <p>Participa en clases dirigidas por expertos</p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <i class="fas fa-heart"></i>
+          </div>
+          <h3>Entrenador Personal</h3>
+          <p>Opciones con entrenamiento personalizado</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const token = localStorage.getItem("token");
+    if(!token) window.location.href = "login.html";
+
+    async function cargarMembresias() {
+      try {
+        // Obtener membresías
+        const res = await fetch("http://localhost:3000/membresias");
+        const membresias = await res.json();
+
+        // Obtener pagos del cliente
+        const pagosRes = await fetch("http://localhost:3000/mis-pagos", {
+          headers: { "Authorization": "Bearer " + token }
+        });
+        const pagos = await pagosRes.json();
+
+        const container = document.getElementById("membresiasContainer");
+        container.innerHTML = "";
+
+        membresias.forEach((m, index) => {
+          const pagoExistente = pagos.find(p => p.membresia_id === m.id);
+          const estado = pagoExistente ? pagoExistente.estado : 'No activo';
+          const esActiva = estado === 'Activo';
+
+          const card = document.createElement("div");
+          card.classList.add("membership-card");
+          if (esActiva) card.classList.add("active");
+          if (index === 1) card.classList.add("featured");
+          
+          card.innerHTML = `
+            ${esActiva ? '<div class="membership-badge active">Activa</div>' : ''}
+            ${index === 1 ? '<div class="membership-badge featured">Más Popular</div>' : ''}
+            <div class="membership-header">
+              <h3>${m.nombre}</h3>
+              <div class="price">$${m.precio}<span>/mes</span></div>
+            </div>
+            <div class="membership-description">
+              <p>${m.descripcion}</p>
+            </div>
+            <ul class="membership-features">
+              <li><i class="fas fa-check"></i> Duración: ${m.duracion_dias} días</li>
+              <li><i class="fas fa-check"></i> Acceso completo al gimnasio</li>
+              <li><i class="fas fa-check"></i> Sin costos ocultos</li>
+            </ul>
+            <div class="membership-status">
+              <span class="status ${esActiva ? 'active' : 'inactive'}">
+                <i class="fas fa-${esActiva ? 'check-circle' : 'clock'}"></i>
+                ${estado}
+              </span>
+            </div>
+            <button class="btn-membership ${esActiva ? 'disabled' : ''}"
+                    ${esActiva ? 'disabled' : ''}
+                    onclick="comprarMembresia(${m.id}, ${m.precio})">
+              <i class="fas fa-${esActiva ? 'check' : 'shopping-cart'}"></i>
+              ${esActiva ? 'Ya tienes esta membresía' : 'Comprar Ahora'}
+            </button>
+          `;
+          container.appendChild(card);
+        });
+
+        // Animar las tarjetas después de cargarlas
+        setTimeout(() => animateCards(), 100);
+
+      } catch (err) {
+        console.error(err);
+        showNotification('Error al cargar membresías', 'error');
+      }
+    }
+
+    async function comprarMembresia(id, precio) {
+      try {
+        const res = await fetch("http://localhost:3000/mis-pagos", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+          },
+          body: JSON.stringify({ membresia_id: id, monto: precio })
+        });
+
+        const data = await res.json();
+        if(res.ok){
+          showNotification(data.message, 'success');
+          cargarMembresias();
+        } else {
+          showNotification("Error: " + (data.message || "No se pudo completar la compra"), 'error');
+        }
+      } catch(err){
+        console.error(err);
+        showNotification("Error al procesar la compra", 'error');
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem("token");
+      window.location.href="login.html";
+    }
+
+    // Función para mostrar notificaciones
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+        <span>${message}</span>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.classList.add('show');
+      }, 100);
+      
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+          document.body.removeChild(notification);
+        }, 300);
+      }, 3000);
+    }
+
+    // Función para animar las tarjetas
+    function animateCards() {
+      const cards = document.querySelectorAll('.membership-card, .benefit-card');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-in');
+          }
+        });
+      }, { threshold: 0.1 });
+
+      cards.forEach(card => observer.observe(card));
+    }
+
+    // Inicializar cuando se carga la página
+    document.addEventListener('DOMContentLoaded', () => {
+      cargarMembresias();
+    });
+
+    // ====== FUNCIONES PARA SIDEBAR RESPONSIVE ======
+    function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.querySelector('.sidebar-overlay');
+      
+      sidebar.classList.toggle('active');
+      overlay.classList.toggle('hidden');
+    }
+
+    function closeSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.querySelector('.sidebar-overlay');
+      
+      sidebar.classList.remove('active');
+      overlay.classList.add('hidden');
+    }
+
+    // Cerrar sidebar al hacer clic en un enlace (móvil)
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('.sidebar a') && window.innerWidth <= 768) {
+        closeSidebar();
+      }
+    });
+
+    // Cerrar sidebar al cambiar tamaño de ventana
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
+        
+        sidebar.classList.remove('active');
+        overlay.classList.add('hidden');
+      }
+    });
+  </script>
+</body>
+</html>

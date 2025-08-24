@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio - Corporal Gym</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div id="not-logged" class="welcome-screen">
+        <div class="welcome-container">
+            <div class="welcome-logo">
+                <img src="images/logo.png" alt="Corporal Gym" width="120" height="120">
+            </div>
+            <h1>¡Bienvenido al Corporal Gym!</h1>
+            <p class="welcome-subtitle">Transforma tu vida, fortalece tu cuerpo, alcanza tus metas</p>
+            <div class="welcome-actions">
+                <a href="login.html" class="btn-primary">Iniciar Sesión</a>
+                <a href="register.html" class="btn-secondary">Registrarse</a>
+            </div>
+        </div>
+        <div class="welcome-background">
+            <div class="floating-elements">
+                <div class="floating-icon">💪</div>
+                <div class="floating-icon">🏋️</div>
+                <div class="floating-icon">🚴</div>
+                <div class="floating-icon">🧘</div>
+            </div>
+        </div>
+    </div>
+
+      <div id="logged" style="display:none;">
+    <!-- Botón toggle para móvil -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+      <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Overlay para móvil -->
+    <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+    
+    <aside class="sidebar">
+      <a href="index.html"><img src="images/logo.png" alt="logo" class="menu-icon"></a>
+      <h3>Corporal Gym</h3>
+      <ul>
+        <li><a href="index.html" class="active"><i class="fas fa-home"></i> Inicio</a></li>
+        <li><a href="membresias.html"><i class="fas fa-id-card"></i> Membresías</a></li>
+        <li><a href="clases.html"><i class="fas fa-dumbbell"></i> Clases</a></li>
+        <li><a href="reportes.html"><i class="fas fa-chart-bar"></i> Reportes</a></li>
+        <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Salir</a></li>
+      </ul>
+    </aside>
+        
+        <main class="dashboard-main">
+            <!-- Header con estadísticas rápidas -->
+            <div class="dashboard-header">
+                <div class="welcome-message">
+                    <h1>¡Bienvenido de vuelta!</h1>
+                    <p>Tu jornada de fitness continúa. ¿Listo para tu próximo entrenamiento?</p>
+                </div>
+                <div class="quick-stats">
+                    <div class="stat-card">
+                        <i class="fas fa-users"></i>
+                        <div class="stat-info">
+                            <span class="stat-number">150+</span>
+                            <span class="stat-label">Miembros Activos</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-clock"></i>
+                        <div class="stat-info">
+                            <span class="stat-number">24/7</span>
+                            <span class="stat-label">Horario</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-trophy"></i>
+                        <div class="stat-info">
+                            <span class="stat-number">50+</span>
+                            <span class="stat-label">Clases Semanales</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección de características principales -->
+            <section class="features-section">
+                <h2>¿Por qué elegirnos?</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-dumbbell"></i>
+                        </div>
+                        <h3>Equipos de Última Generación</h3>
+                        <p>Máquinas modernas y equipos de cardio de alta calidad para maximizar tu entrenamiento.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-user-friends"></i>
+                        </div>
+                        <h3>Entrenadores Certificados</h3>
+                        <p>Profesionales expertos que te guiarán en cada paso de tu transformación física.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h3>Ambiente Motivador</h3>
+                        <p>Un espacio diseñado para inspirarte y mantenerte comprometido con tus objetivos.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3>Seguridad Garantizada</h3>
+                        <p>Protocolos de higiene y medidas de seguridad para tu tranquilidad.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección de horarios destacados -->
+            <section class="schedule-section">
+                <h2>Horarios Destacados</h2>
+                <div class="schedule-grid" id="scheduleGrid">
+                    <!-- Las clases se cargarán dinámicamente desde la base de datos -->
+                    <div class="loading-placeholder">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Cargando clases...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección de galería de fotos -->
+            <section class="gallery-section">
+                <h2>Galería del Gym</h2>
+                <div class="gallery-grid">
+                    <div class="gallery-item">
+                        <img src="images/img1.jpg" class="gallery-photo">
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/img2.jpeg" class="gallery-photo">
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/img3.png" class="gallery-photo">
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/img4.png" class="gallery-photo">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección de membresías destacadas -->
+            <section class="memberships-section">
+                <h2>Membresías Populares</h2>
+                <div class="memberships-grid" id="membershipsGrid">
+                    <!-- Las membresías se cargarán dinámicamente desde la base de datos -->
+                    <div class="loading-placeholder">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Cargando membresías...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección de contacto -->
+            <section class="contact-section">
+                <div class="contact-info">
+                    <h2>¿Necesitas ayuda?</h2>
+                    <p>Nuestro equipo está aquí para ayudarte a alcanzar tus objetivos fitness</p>
+                    <div class="contact-details">
+                        <div class="contact-item">
+                            <i class="fas fa-phone"></i>
+                            <span>+(593)96 843 4516</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <span>fitnesscorporal@hotmail.com</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Corporal Nexus , Guayaquil, Ecuador</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Función para verificar autenticación
+        function checkAuth() {
+            const token = localStorage.getItem("token");
+            if (token) {
+                // Verificar si el token es válido haciendo una petición al servidor
+                fetch('http://localhost:3000/verify-token', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Token válido, mostrar dashboard
+                        document.getElementById("logged").style.display = "flex";
+                        document.getElementById("not-logged").style.display = "none";
+                        // Cargar datos del dashboard
+                        setTimeout(() => {
+                            animateCards();
+                            animateStats();
+                            loadDashboardData();
+                        }, 500);
+                    } else {
+                        // Token inválido, limpiar y mostrar login
+                        localStorage.removeItem("token");
+                        document.getElementById("logged").style.display = "none";
+                        document.getElementById("not-logged").style.display = "flex";
+                    }
+                })
+                .catch(error => {
+                    console.error('Error verificando token:', error);
+                    // En caso de error, mostrar login
+                    localStorage.removeItem("token");
+                    document.getElementById("logged").style.display = "none";
+                    document.getElementById("not-logged").style.display = "flex";
+                });
+            } else {
+                // No hay token, mostrar pantalla de login
+                document.getElementById("logged").style.display = "none";
+                document.getElementById("not-logged").style.display = "flex";
+            }
+        }
+        
+        function logout(){
+            localStorage.removeItem("token");
+            window.location.href="login.html";
+        }
+
+        // Animaciones de entrada para las tarjetas
+        function animateCards() {
+            const cards = document.querySelectorAll('.feature-card, .schedule-card, .membership-card');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-in');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            cards.forEach(card => observer.observe(card));
+        }
+
+        // Contador animado para las estadísticas
+        function animateStats() {
+            const statNumbers = document.querySelectorAll('.stat-number');
+            statNumbers.forEach(stat => {
+                const finalNumber = stat.textContent;
+                let currentNumber = 0;
+                const increment = parseInt(finalNumber) / 50;
+                
+                const timer = setInterval(() => {
+                    currentNumber += increment;
+                    if (currentNumber >= parseInt(finalNumber)) {
+                        stat.textContent = finalNumber;
+                        clearInterval(timer);
+                    } else {
+                        stat.textContent = Math.floor(currentNumber);
+                    }
+                }, 50);
+            });
+        }
+
+        // Cargar datos desde la base de datos
+        async function loadDashboardData() {
+            try {
+                // Cargar clases desde la base de datos
+                const clasesResponse = await fetch('http://localhost:3000/clases');
+                const clases = await clasesResponse.json();
+                console.log('Clases cargadas:', clases);
+                displayClases(clases);
+
+                // Cargar membresías desde la base de datos
+                const membresiasResponse = await fetch('http://localhost:3000/membresias');
+                const membresias = await membresiasResponse.json();
+                console.log('Membresías cargadas:', membresias);
+                displayMembresias(membresias);
+
+            } catch (error) {
+                console.error('Error cargando datos:', error);
+                showErrorMessages();
+            }
+        }
+
+        // Mostrar clases en el dashboard
+        function displayClases(clases) {
+            const scheduleGrid = document.getElementById('scheduleGrid');
+            if (!scheduleGrid) return;
+
+            if (clases.length === 0) {
+                scheduleGrid.innerHTML = '<div class="no-data">No hay clases disponibles en este momento</div>';
+                return;
+            }
+
+            // Seleccionar las 3 mejores clases basándose en popularidad y horarios
+            // Priorizar clases de la mañana y con más días por semana
+            const clasesDestacadas = clases
+                .map(clase => {
+                    // Calcular puntuación basada en horario y frecuencia
+                    let puntuacion = 0;
+                    
+                    // Horario de mañana (más popular)
+                    if (clase.horario_inicio && clase.horario_inicio < '12:00:00') {
+                        puntuacion += 3;
+                    }
+                    
+                    // Frecuencia de días por semana
+                    if (clase.dias_semana) {
+                        const dias = clase.dias_semana.split(',').length;
+                        puntuacion += dias;
+                    }
+                    
+                    // Clases populares por nombre
+                    const nombresPopulares = ['Yoga', 'Zumba', 'Spinning', 'Crossfit'];
+                    if (nombresPopulares.includes(clase.nombre)) {
+                        puntuacion += 2;
+                    }
+                    
+                    return { ...clase, puntuacion };
+                })
+                .sort((a, b) => b.puntuacion - a.puntuacion)
+                .slice(0, 3);
+            
+            scheduleGrid.innerHTML = clasesDestacadas.map(clase => {
+                // Formatear horario
+                const horarioInicio = clase.horario_inicio ? clase.horario_inicio.substring(0, 5) : '';
+                const horarioFin = clase.horario_fin ? clase.horario_fin.substring(0, 5) : '';
+                const horarioFormateado = horarioInicio && horarioFin ? `${horarioInicio} - ${horarioFin}` : 'Por definir';
+                
+                // Formatear días de la semana
+                const diasFormateados = clase.dias_semana ? clase.dias_semana.replace(/,/g, ', ') : '';
+                
+                return `
+                    <div class="schedule-card">
+                        <div class="schedule-time">${horarioFormateado}</div>
+                        <div class="schedule-info">
+                            <h4>${clase.nombre || 'Clase'}</h4>
+                            <p>Días: ${diasFormateados}</p>
+                            <span class="schedule-trainer">Con ${clase.entrenador || 'Entrenador'}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Animar las tarjetas después de cargarlas
+            setTimeout(() => animateCards(), 100);
+        }
+
+        // Mostrar membresías en el dashboard
+        function displayMembresias(membresias) {
+            const membershipsGrid = document.getElementById('membershipsGrid');
+            if (!membershipsGrid) return;
+
+            if (membresias.length === 0) {
+                membershipsGrid.innerHTML = '<div class="no-data">No hay membresías disponibles en este momento</div>';
+                return;
+            }
+
+            // Seleccionar las 3 mejores membresías basándose en valor y popularidad
+            // Priorizar membresías con mejor relación precio-beneficio
+            const membresiasDestacadas = membresias
+                .map(membresia => {
+                    // Calcular puntuación basada en precio y características
+                    let puntuacion = 0;
+                    
+                    // Membresías premium (más valor)
+                    if (membresia.nombre === 'Premium' || membresia.nombre === 'Oro' || membresia.nombre === 'Platino') {
+                        puntuacion += 5;
+                    }
+                    
+                    // Membresías con entrenador personal
+                    if (membresia.descripcion && membresia.descripcion.includes('entrenador personal')) {
+                        puntuacion += 3;
+                    }
+                    
+                    // Membresías con clases grupales
+                    if (membresia.descripcion && membresia.descripcion.includes('clases grupales')) {
+                        puntuacion += 2;
+                    }
+                    
+                    // Membresías básicas (buena opción para principiantes)
+                    if (membresia.nombre === 'Básico' || membresia.nombre === 'Estudiante') {
+                        puntuacion += 1;
+                    }
+                    
+                    return { ...membresia, puntuacion };
+                })
+                .sort((a, b) => b.puntuacion - a.puntuacion)
+                .slice(0, 3);
+            
+            membershipsGrid.innerHTML = membresiasDestacadas.map((membresia, index) => {
+                // Determinar cuál es la más popular (la de mayor puntuación)
+                const esMasPopular = index === 0;
+                
+                return `
+                    <div class="membership-card ${esMasPopular ? 'featured' : ''}">
+                        ${esMasPopular ? '<div class="membership-badge">Más Popular</div>' : ''}
+                        <div class="membership-header">
+                            <h3>${membresia.nombre || 'Membresía'}</h3>
+                            <div class="price">$${membresia.precio || '0'}<span>/mes</span></div>
+                        </div>
+                        <ul class="membership-features">
+                            <li><i class="fas fa-check"></i> ${membresia.descripcion || 'Características no disponibles'}</li>
+                            <li><i class="fas fa-check"></i> Duración: ${membresia.duracion_dias || '0'} días</li>
+                            <li><i class="fas fa-check"></i> Acceso completo al gimnasio</li>
+                        </ul>
+                        <a href="membresias.html" class="btn-membership">Ver Detalles</a>
+                    </div>
+                `;
+            }).join('');
+
+            // Animar las tarjetas después de cargarlas
+            setTimeout(() => animateCards(), 100);
+        }
+
+        // Mostrar mensajes de error
+        function showErrorMessages() {
+            const scheduleGrid = document.getElementById('scheduleGrid');
+            const membershipsGrid = document.getElementById('membershipsGrid');
+            
+            if (scheduleGrid) {
+                scheduleGrid.innerHTML = '<div class="error-message">Error al cargar las clases</div>';
+            }
+            
+            if (membershipsGrid) {
+                membershipsGrid.innerHTML = '<div class="error-message">Error al cargar las membresías</div>';
+            }
+        }
+
+        // Inicializar cuando se carga la página
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth(); // Verificar autenticación al cargar la página
+        });
+
+        // ====== FUNCIONES PARA SIDEBAR RESPONSIVE ======
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('hidden');
+        }
+
+        function closeSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            sidebar.classList.remove('active');
+            overlay.classList.add('hidden');
+        }
+
+        // Cerrar sidebar al hacer clic en un enlace (móvil)
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.sidebar a') && window.innerWidth <= 768) {
+                closeSidebar();
+            }
+        });
+
+        // Cerrar sidebar al cambiar tamaño de ventana
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                const sidebar = document.querySelector('.sidebar');
+                const overlay = document.querySelector('.sidebar-overlay');
+                
+                sidebar.classList.remove('active');
+                overlay.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
